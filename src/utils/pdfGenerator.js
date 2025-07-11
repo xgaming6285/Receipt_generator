@@ -1,21 +1,31 @@
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
-
 export const generatePDF = async (invoiceData, templateNumber) => {
   return new Promise(async (resolve, reject) => {
     try {
+      // Lazy load heavy dependencies
+      const [
+        { default: html2canvas },
+        { default: jsPDF },
+        { default: InvoiceTemplate },
+        { default: ReactDOMServer },
+        React,
+        { getTemplate },
+      ] = await Promise.all([
+        import("html2canvas"),
+        import("jspdf"),
+        import("../components/InvoiceTemplate"),
+        import("react-dom/server"),
+        import("react"),
+        import("./templateRegistry"),
+      ]);
+
       const invoice = document.createElement("div");
       document.body.appendChild(invoice);
 
-      // Render the InvoiceTemplate component to a string
-      const InvoiceTemplate = (await import("../components/InvoiceTemplate"))
-        .default;
-      const ReactDOMServer = (await import("react-dom/server")).default;
-      const React = (await import("react")).default;
+      // Load the specific template
+      const TemplateComponent = await getTemplate(templateNumber);
 
-      const invoiceElement = React.createElement(InvoiceTemplate, {
+      const invoiceElement = React.createElement(TemplateComponent, {
         data: invoiceData,
-        templateNumber,
       });
       const invoiceHTML = ReactDOMServer.renderToString(invoiceElement);
 

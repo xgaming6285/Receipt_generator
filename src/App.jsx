@@ -1,19 +1,26 @@
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { navItems } from "./nav-items";
-import TemplatePage from "./pages/TemplatePage";
-import ReceiptPage from "./pages/ReceiptPage";
-import Index from "./pages/Index";
 
-const queryClient = new QueryClient();
+// Lazy load pages
+const TemplatePage = lazy(() => import("./pages/TemplatePage"));
+const ReceiptPage = lazy(() => import("./pages/ReceiptPage"));
+const Index = lazy(() => import("./pages/Index"));
+
+// Loading component
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+  </div>
+);
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <BrowserRouter>
+  <TooltipProvider>
+    <Toaster />
+    <BrowserRouter>
+      <Suspense fallback={<PageLoader />}>
         <Routes>
           {navItems.map(({ to, page }) => (
             <Route key={to} path={to} element={page} />
@@ -22,9 +29,9 @@ const App = () => (
           <Route path="/template" element={<TemplatePage />} />
           <Route path="/receipt" element={<ReceiptPage />} />
         </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+      </Suspense>
+    </BrowserRouter>
+  </TooltipProvider>
 );
 
 export default App;

@@ -1,12 +1,15 @@
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
-
 const compressImage = (canvas, quality = 0.7) => {
   return canvas.toDataURL("image/jpeg", quality);
 };
 
 export const generateReceiptPDF = async (receiptElement) => {
   try {
+    // Lazy load heavy dependencies
+    const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+      import("html2canvas"),
+      import("jspdf"),
+    ]);
+
     const canvas = await html2canvas(receiptElement, {
       scale: 2, // Increase scale for better quality
       useCORS: true,
